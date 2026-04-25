@@ -1,9 +1,9 @@
-# ── Auth Service Deployment ───────────────────────────────────────────────────
+# Auth Service — DEV (lighter resources, maxReplicas: 2)
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: auth-service
-  namespace: prod
+  namespace: dev
   labels:
     app: auth-service
 spec:
@@ -49,11 +49,11 @@ spec:
                   key: JWT_SECRET
           resources:
             requests:
-              cpu: 128m
-              memory: 256Mi
+              cpu: 64m
+              memory: 128Mi
             limits:
-              cpu: 500m
-              memory: 512Mi
+              cpu: 250m
+              memory: 256Mi
           livenessProbe:
             httpGet:
               path: /health
@@ -71,12 +71,11 @@ spec:
             timeoutSeconds: 5
             failureThreshold: 3
 ---
-# ── Auth Service ClusterIP Service ───────────────────────────────────────────
 apiVersion: v1
 kind: Service
 metadata:
   name: auth-service
-  namespace: prod
+  namespace: dev
   labels:
     app: auth-service
 spec:
@@ -87,19 +86,18 @@ spec:
       targetPort: 8001
   type: ClusterIP
 ---
-# ── Auth Service HPA ─────────────────────────────────────────────────────────
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: auth-service-hpa
-  namespace: prod
+  namespace: dev
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
     name: auth-service
   minReplicas: 1
-  maxReplicas: 3
+  maxReplicas: 2
   metrics:
     - type: Resource
       resource:
@@ -107,9 +105,3 @@ spec:
         target:
           type: Utilization
           averageUtilization: 70
-    - type: Resource
-      resource:
-        name: memory
-        target:
-          type: Utilization
-          averageUtilization: 80

@@ -1,10 +1,9 @@
-# ── Notification Service Deployment ──────────────────────────────────────────
-# No HPA — this is a stateless best-effort email service, single replica is fine.
+# Notification Service — DEV
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: notification-service
-  namespace: prod
+  namespace: dev
   labels:
     app: notification-service
 spec:
@@ -45,11 +44,11 @@ spec:
                   key: EMAIL_PASS
           resources:
             requests:
-              cpu: 64m
-              memory: 128Mi
+              cpu: 32m
+              memory: 64Mi
             limits:
-              cpu: 250m
-              memory: 256Mi
+              cpu: 125m
+              memory: 128Mi
           livenessProbe:
             httpGet:
               path: /health
@@ -67,13 +66,11 @@ spec:
             timeoutSeconds: 5
             failureThreshold: 3
 ---
-# ── Notification Service ClusterIP Service ────────────────────────────────────
-# ClusterIP only — not exposed through kgateway (internal service-to-service only)
 apiVersion: v1
 kind: Service
 metadata:
   name: notification-service
-  namespace: prod
+  namespace: dev
   labels:
     app: notification-service
 spec:

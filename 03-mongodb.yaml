@@ -1,20 +1,16 @@
-# ─────────────────────────────────────────────────────────────────────────────
-# MongoDB StatefulSets + Headless Services — PROD namespace
-# Each microservice gets its own isolated MongoDB instance.
-# storageClassName: local-path  ← for immediate testing with local-path-provisioner
-# When NFS is ready: change to  storageClassName: nfs-storage
-# ─────────────────────────────────────────────────────────────────────────────
+# MongoDB StatefulSets for DEV — lighter resources, 500Mi storage
+# storageClassName: local-path (change to nfs-storage when NFS is ready)
 
-# ══ AUTH-DB ══════════════════════════════════════════════════════════════════
+# ══ AUTH-DB (dev) ═════════════════════════════════════════════════════════════
 apiVersion: v1
 kind: Service
 metadata:
   name: auth-db
-  namespace: prod
+  namespace: dev
   labels:
     app: auth-db
 spec:
-  clusterIP: None   # Headless — stable pod DNS: auth-db-0.auth-db.prod.svc.cluster.local
+  clusterIP: None
   selector:
     app: auth-db
   ports:
@@ -25,7 +21,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: auth-db
-  namespace: prod
+  namespace: dev
   labels:
     app: auth-db
 spec:
@@ -54,27 +50,21 @@ spec:
               mountPath: /data/db
           resources:
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 50m
+              memory: 128Mi
             limits:
-              cpu: 500m
-              memory: 512Mi
+              cpu: 250m
+              memory: 256Mi
           livenessProbe:
             exec:
-              command:
-                - mongosh
-                - --eval
-                - "db.adminCommand('ping')"
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
             initialDelaySeconds: 40
             periodSeconds: 20
             timeoutSeconds: 10
             failureThreshold: 3
           readinessProbe:
             exec:
-              command:
-                - mongosh
-                - --eval
-                - "db.adminCommand('ping')"
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
             initialDelaySeconds: 20
             periodSeconds: 10
             timeoutSeconds: 10
@@ -87,14 +77,14 @@ spec:
         storageClassName: local-path
         resources:
           requests:
-            storage: 1Gi
+            storage: 500Mi
 ---
-# ══ PRODUCT-DB ═══════════════════════════════════════════════════════════════
+# ══ PRODUCT-DB (dev) ══════════════════════════════════════════════════════════
 apiVersion: v1
 kind: Service
 metadata:
   name: product-db
-  namespace: prod
+  namespace: dev
   labels:
     app: product-db
 spec:
@@ -109,7 +99,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: product-db
-  namespace: prod
+  namespace: dev
   labels:
     app: product-db
 spec:
@@ -138,27 +128,21 @@ spec:
               mountPath: /data/db
           resources:
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 50m
+              memory: 128Mi
             limits:
-              cpu: 500m
-              memory: 512Mi
+              cpu: 250m
+              memory: 256Mi
           livenessProbe:
             exec:
-              command:
-                - mongosh
-                - --eval
-                - "db.adminCommand('ping')"
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
             initialDelaySeconds: 40
             periodSeconds: 20
             timeoutSeconds: 10
             failureThreshold: 3
           readinessProbe:
             exec:
-              command:
-                - mongosh
-                - --eval
-                - "db.adminCommand('ping')"
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
             initialDelaySeconds: 20
             periodSeconds: 10
             timeoutSeconds: 10
@@ -171,14 +155,14 @@ spec:
         storageClassName: local-path
         resources:
           requests:
-            storage: 1Gi
+            storage: 500Mi
 ---
-# ══ ORDER-DB ═════════════════════════════════════════════════════════════════
+# ══ ORDER-DB (dev) ════════════════════════════════════════════════════════════
 apiVersion: v1
 kind: Service
 metadata:
   name: order-db
-  namespace: prod
+  namespace: dev
   labels:
     app: order-db
 spec:
@@ -193,7 +177,7 @@ apiVersion: apps/v1
 kind: StatefulSet
 metadata:
   name: order-db
-  namespace: prod
+  namespace: dev
   labels:
     app: order-db
 spec:
@@ -222,27 +206,21 @@ spec:
               mountPath: /data/db
           resources:
             requests:
-              cpu: 100m
-              memory: 256Mi
+              cpu: 50m
+              memory: 128Mi
             limits:
-              cpu: 500m
-              memory: 512Mi
+              cpu: 250m
+              memory: 256Mi
           livenessProbe:
             exec:
-              command:
-                - mongosh
-                - --eval
-                - "db.adminCommand('ping')"
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
             initialDelaySeconds: 40
             periodSeconds: 20
             timeoutSeconds: 10
             failureThreshold: 3
           readinessProbe:
             exec:
-              command:
-                - mongosh
-                - --eval
-                - "db.adminCommand('ping')"
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
             initialDelaySeconds: 20
             periodSeconds: 10
             timeoutSeconds: 10
@@ -255,4 +233,4 @@ spec:
         storageClassName: local-path
         resources:
           requests:
-            storage: 1Gi
+            storage: 500Mi

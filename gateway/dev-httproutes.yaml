@@ -1,18 +1,14 @@
-# HTTPRoutes for PROD namespace
-# All routes reference the shopnova-gateway in the prod namespace.
-# Path precedence: longer prefix wins (Gateway API spec).
-# /api/auth (9 chars) > / (1 char) — so API routes always win over catch-all.
+# HTTPRoutes for DEV namespace — same routing logic, different namespace/gateway
 
-# ── /api/auth → auth-service:8001 ──────────────────────────────────────────
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: auth-route
-  namespace: prod
+  namespace: dev
 spec:
   parentRefs:
     - name: shopnova-gateway
-      namespace: prod
+      namespace: dev
   rules:
     - matches:
         - path:
@@ -22,16 +18,15 @@ spec:
         - name: auth-service
           port: 8001
 ---
-# ── /api/products → product-service:8002 ───────────────────────────────────
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: product-route
-  namespace: prod
+  namespace: dev
 spec:
   parentRefs:
     - name: shopnova-gateway
-      namespace: prod
+      namespace: dev
   rules:
     - matches:
         - path:
@@ -41,16 +36,15 @@ spec:
         - name: product-service
           port: 8002
 ---
-# ── /api/orders → order-service:8003 ───────────────────────────────────────
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: order-route
-  namespace: prod
+  namespace: dev
 spec:
   parentRefs:
     - name: shopnova-gateway
-      namespace: prod
+      namespace: dev
   rules:
     - matches:
         - path:
@@ -60,16 +54,15 @@ spec:
         - name: order-service
           port: 8003
 ---
-# ── / → frontend-service:3000 (catch-all, lowest priority) ─────────────────
 apiVersion: gateway.networking.k8s.io/v1
 kind: HTTPRoute
 metadata:
   name: frontend-route
-  namespace: prod
+  namespace: dev
 spec:
   parentRefs:
     - name: shopnova-gateway
-      namespace: prod
+      namespace: dev
   rules:
     - matches:
         - path:

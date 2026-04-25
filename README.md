@@ -1,6 +1,6 @@
-# shopnovaorg-helm - main branch (PRODUCTION)
+# shopnovaorg-helm - dev branch (DEVELOPMENT)
 
-This branch contains Kubernetes manifests for the prod namespace.
+This branch contains Kubernetes manifests for the dev namespace.
 
 ## Apply order
 ```
@@ -19,4 +19,4 @@ kubectl apply -f 08-frontend.yaml
 kubectl apply -f 09-networkpolicies.yaml
 ```
 
-The dev branch contains development (dev namespace) manifests.
+The main branch contains production (prod namespace) manifests.
