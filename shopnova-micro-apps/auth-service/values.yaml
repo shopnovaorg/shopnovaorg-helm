@@ -3,7 +3,7 @@ namespace: prod
 
 image:
   repository: abhinavbabu33/shopnova-auth-service
-  tag: auth-service-v0.1.0
+  tag: auth-service-v0.1.1
   pullPolicy: Always
 
 replicaCount: 1
