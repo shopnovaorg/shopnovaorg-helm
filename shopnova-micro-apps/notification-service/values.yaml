@@ -1,0 +1,20 @@
+# Notification Service — dev values (dev branch)
+namespace: dev
+
+image:
+  repository: abhinavbabu33/shopnova-notification-service
+  tag: latest          # ← helm-updater-dev writes this field
+  pullPolicy: Always
+
+replicaCount: 1
+port: 8004
+
+# No HPA — stateless best-effort email service
+
+resources:
+  requests:
+    cpu: 64m
+    memory: 128Mi
+  limits:
+    cpu: 250m
+    memory: 256Mi
