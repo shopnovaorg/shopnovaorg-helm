@@ -3,7 +3,7 @@ namespace: prod
 
 image:
   repository: abhinavbabu33/shopnova-product-service
-  tag: product-service-v0.1.0
+  tag: product-service-v0.2.0
   pullPolicy: Always
 
 replicaCount: 1
