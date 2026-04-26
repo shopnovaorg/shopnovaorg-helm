@@ -1,8 +1,0 @@
-# Frontend Service — dev overrides (dev branch)
-namespace: dev
-
-image:
-  tag: latest          # ← helm-updater-dev writes this field
-
-hpa:
-  maxReplicas: 2
