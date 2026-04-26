@@ -1,6 +1,40 @@
-{{- /* product-service templates */}}
-apiVersion: apps/v1
-kind: Deployment
+{{- /* product-service templates — Argo Rollouts blue-green */}}
+
+{{- /* ── Active Service (live traffic) ─────────────────────────────────── */}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service-active
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: product-service
+spec:
+  selector:
+    app: product-service
+  ports:
+    - port: {{ .Values.port }}
+      targetPort: {{ .Values.port }}
+  type: ClusterIP
+---
+{{- /* ── Preview Service (pre-promotion / test traffic) ───────────────── */}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: product-service-preview
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: product-service
+spec:
+  selector:
+    app: product-service
+  ports:
+    - port: {{ .Values.port }}
+      targetPort: {{ .Values.port }}
+  type: ClusterIP
+---
+{{- /* ── Rollout (replaces Deployment) ──────────────────────────────────── */}}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: product-service
   namespace: {{ .Values.namespace }}
@@ -65,21 +99,11 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: product-service
-  namespace: {{ .Values.namespace }}
-  labels:
-    app: product-service
-spec:
-  selector:
-    app: product-service
-  ports:
-    - port: {{ .Values.port }}
-      targetPort: {{ .Values.port }}
-  type: ClusterIP
+  strategy:
+    blueGreen:
+      activeService: product-service-active
+      previewService: product-service-preview
+      autoPromotionEnabled: {{ .Values.rollout.autoPromotion }}
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -88,8 +112,8 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
+    apiVersion: argoproj.io/v1alpha1
+    kind: Rollout
     name: product-service
   minReplicas: {{ .Values.hpa.minReplicas }}
   maxReplicas: {{ .Values.hpa.maxReplicas }}

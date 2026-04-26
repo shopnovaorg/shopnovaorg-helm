@@ -1,6 +1,40 @@
-{{- /* order-service templates */}}
-apiVersion: apps/v1
-kind: Deployment
+{{- /* order-service templates — Argo Rollouts blue-green */}}
+
+{{- /* ── Active Service (live traffic) ─────────────────────────────────── */}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service-active
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: order-service
+spec:
+  selector:
+    app: order-service
+  ports:
+    - port: {{ .Values.port }}
+      targetPort: {{ .Values.port }}
+  type: ClusterIP
+---
+{{- /* ── Preview Service (pre-promotion / test traffic) ───────────────── */}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-service-preview
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: order-service
+spec:
+  selector:
+    app: order-service
+  ports:
+    - port: {{ .Values.port }}
+      targetPort: {{ .Values.port }}
+  type: ClusterIP
+---
+{{- /* ── Rollout (replaces Deployment) ──────────────────────────────────── */}}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: order-service
   namespace: {{ .Values.namespace }}
@@ -42,21 +76,6 @@ spec:
                 secretKeyRef:
                   name: shopnova-secrets
                   key: ORDER_MONGO_URI
-            - name: JWT_SECRET
-              valueFrom:
-                secretKeyRef:
-                  name: shopnova-secrets
-                  key: JWT_SECRET
-            - name: NOTIFICATION_SERVICE_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: shopnova-config
-                  key: NOTIFICATION_SERVICE_HOST
-            - name: NOTIFICATION_SERVICE_PORT
-              valueFrom:
-                configMapKeyRef:
-                  name: shopnova-config
-                  key: NOTIFICATION_SERVICE_PORT
           resources:
             requests:
               cpu: {{ .Values.resources.requests.cpu }}
@@ -80,21 +99,11 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: order-service
-  namespace: {{ .Values.namespace }}
-  labels:
-    app: order-service
-spec:
-  selector:
-    app: order-service
-  ports:
-    - port: {{ .Values.port }}
-      targetPort: {{ .Values.port }}
-  type: ClusterIP
+  strategy:
+    blueGreen:
+      activeService: order-service-active
+      previewService: order-service-preview
+      autoPromotionEnabled: {{ .Values.rollout.autoPromotion }}
 ---
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
@@ -103,8 +112,8 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
+    apiVersion: argoproj.io/v1alpha1
+    kind: Rollout
     name: order-service
   minReplicas: {{ .Values.hpa.minReplicas }}
   maxReplicas: {{ .Values.hpa.maxReplicas }}
