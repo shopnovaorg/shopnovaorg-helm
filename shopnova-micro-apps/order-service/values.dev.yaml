@@ -2,7 +2,7 @@
 namespace: dev
 
 image:
-  tag: latest          # ← helm-updater-dev writes this field
+  tag: dev-fb4603d
 
 hpa:
   maxReplicas: 2
