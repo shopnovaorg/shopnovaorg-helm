@@ -1,11 +1,11 @@
 # ─────────────────────────────────────────────────────────────────────────────
 # MongoDB StatefulSets + Headless Services — PROD namespace
-# Each microservice gets its own isolated MongoDB instance.
-# storageClassName: local-path  ← for immediate testing with local-path-provisioner
-# When NFS is ready: change to  storageClassName: nfs-storage
+# Each microservice gets its own isolated MongoDB instance
+# Using NFS-backed persistent storage + presentation-safe MongoDB resources
 # ─────────────────────────────────────────────────────────────────────────────
 
 # ══ AUTH-DB ══════════════════════════════════════════════════════════════════
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -14,12 +14,13 @@ metadata:
   labels:
     app: auth-db
 spec:
-  clusterIP: None   # Headless — stable pod DNS: auth-db-0.auth-db.prod.svc.cluster.local
+  clusterIP: None
   selector:
     app: auth-db
   ports:
     - port: 27017
       targetPort: 27017
+
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -47,6 +48,9 @@ spec:
         - name: mongodb
           image: mongo:7
           imagePullPolicy: IfNotPresent
+          args:
+            - --wiredTigerCacheSizeGB
+            - "0.25"
           ports:
             - containerPort: 27017
           volumeMounts:
@@ -55,28 +59,22 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 256Mi
+              memory: 1Gi
             limits:
               cpu: 500m
-              memory: 512Mi
-          livenessProbe:
-            exec:
-              command:
-                - mongosh
-                - --eval
-                - "db.adminCommand('ping')"
-            initialDelaySeconds: 40
-            periodSeconds: 20
-            timeoutSeconds: 10
-            failureThreshold: 3
+              memory: 2Gi
           readinessProbe:
             exec:
-              command:
-                - mongosh
-                - --eval
-                - "db.adminCommand('ping')"
-            initialDelaySeconds: 20
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 40
             periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 60
+            periodSeconds: 20
             timeoutSeconds: 10
             failureThreshold: 3
   volumeClaimTemplates:
@@ -84,12 +82,14 @@ spec:
         name: mongo-data
       spec:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: local-path
+        storageClassName: nfs-storage
         resources:
           requests:
             storage: 1Gi
+
 ---
 # ══ PRODUCT-DB ═══════════════════════════════════════════════════════════════
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -104,6 +104,7 @@ spec:
   ports:
     - port: 27017
       targetPort: 27017
+
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -131,6 +132,9 @@ spec:
         - name: mongodb
           image: mongo:7
           imagePullPolicy: IfNotPresent
+          args:
+            - --wiredTigerCacheSizeGB
+            - "0.25"
           ports:
             - containerPort: 27017
           volumeMounts:
@@ -139,28 +143,22 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 256Mi
+              memory: 1Gi
             limits:
               cpu: 500m
-              memory: 512Mi
-          livenessProbe:
-            exec:
-              command:
-                - mongosh
-                - --eval
-                - "db.adminCommand('ping')"
-            initialDelaySeconds: 40
-            periodSeconds: 20
-            timeoutSeconds: 10
-            failureThreshold: 3
+              memory: 2Gi
           readinessProbe:
             exec:
-              command:
-                - mongosh
-                - --eval
-                - "db.adminCommand('ping')"
-            initialDelaySeconds: 20
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 40
             periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 60
+            periodSeconds: 20
             timeoutSeconds: 10
             failureThreshold: 3
   volumeClaimTemplates:
@@ -168,12 +166,14 @@ spec:
         name: mongo-data
       spec:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: local-path
+        storageClassName: nfs-storage
         resources:
           requests:
             storage: 1Gi
+
 ---
 # ══ ORDER-DB ═════════════════════════════════════════════════════════════════
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -188,6 +188,7 @@ spec:
   ports:
     - port: 27017
       targetPort: 27017
+
 ---
 apiVersion: apps/v1
 kind: StatefulSet
@@ -215,6 +216,9 @@ spec:
         - name: mongodb
           image: mongo:7
           imagePullPolicy: IfNotPresent
+          args:
+            - --wiredTigerCacheSizeGB
+            - "0.25"
           ports:
             - containerPort: 27017
           volumeMounts:
@@ -223,28 +227,22 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 256Mi
+              memory: 1Gi
             limits:
               cpu: 500m
-              memory: 512Mi
-          livenessProbe:
-            exec:
-              command:
-                - mongosh
-                - --eval
-                - "db.adminCommand('ping')"
-            initialDelaySeconds: 40
-            periodSeconds: 20
-            timeoutSeconds: 10
-            failureThreshold: 3
+              memory: 2Gi
           readinessProbe:
             exec:
-              command:
-                - mongosh
-                - --eval
-                - "db.adminCommand('ping')"
-            initialDelaySeconds: 20
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 40
             periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 60
+            periodSeconds: 20
             timeoutSeconds: 10
             failureThreshold: 3
   volumeClaimTemplates:
@@ -252,7 +250,7 @@ spec:
         name: mongo-data
       spec:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: local-path
+        storageClassName: nfs-storage
         resources:
           requests:
             storage: 1Gi
