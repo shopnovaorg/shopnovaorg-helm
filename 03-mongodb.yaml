@@ -1,7 +1,8 @@
-# MongoDB StatefulSets for DEV — lighter resources, 500Mi storage
-# storageClassName: local-path (change to nfs-storage when NFS is ready)
+# MongoDB StatefulSets for DEV
+# Using NFS-backed persistent storage + safer MongoDB memory limits
 
-# ══ AUTH-DB (dev) ═════════════════════════════════════════════════════════════
+# ══ AUTH-DB (dev) ═════════════════════════════════════════════
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -22,8 +23,6 @@ kind: StatefulSet
 metadata:
   name: auth-db
   namespace: dev
-  labels:
-    app: auth-db
 spec:
   serviceName: auth-db
   replicas: 1
@@ -42,7 +41,6 @@ spec:
       containers:
         - name: mongodb
           image: mongo:7
-          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 27017
           volumeMounts:
@@ -50,23 +48,23 @@ spec:
               mountPath: /data/db
           resources:
             requests:
-              cpu: 50m
-              memory: 128Mi
+              cpu: 100m
+              memory: 512Mi
             limits:
-              cpu: 250m
-              memory: 256Mi
-          livenessProbe:
-            exec:
-              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
-            initialDelaySeconds: 40
-            periodSeconds: 20
-            timeoutSeconds: 10
-            failureThreshold: 3
+              cpu: 500m
+              memory: 1Gi
           readinessProbe:
             exec:
               command: ["mongosh", "--eval", "db.adminCommand('ping')"]
-            initialDelaySeconds: 20
+            initialDelaySeconds: 40
             periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 60
+            periodSeconds: 20
             timeoutSeconds: 10
             failureThreshold: 3
   volumeClaimTemplates:
@@ -74,12 +72,14 @@ spec:
         name: mongo-data
       spec:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: local-path
+        storageClassName: nfs-storage
         resources:
           requests:
             storage: 500Mi
+
 ---
-# ══ PRODUCT-DB (dev) ══════════════════════════════════════════════════════════
+# ══ PRODUCT-DB (dev) ═════════════════════════════════════════════
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -100,8 +100,6 @@ kind: StatefulSet
 metadata:
   name: product-db
   namespace: dev
-  labels:
-    app: product-db
 spec:
   serviceName: product-db
   replicas: 1
@@ -120,7 +118,6 @@ spec:
       containers:
         - name: mongodb
           image: mongo:7
-          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 27017
           volumeMounts:
@@ -128,23 +125,23 @@ spec:
               mountPath: /data/db
           resources:
             requests:
-              cpu: 50m
-              memory: 128Mi
+              cpu: 100m
+              memory: 512Mi
             limits:
-              cpu: 250m
-              memory: 256Mi
-          livenessProbe:
-            exec:
-              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
-            initialDelaySeconds: 40
-            periodSeconds: 20
-            timeoutSeconds: 10
-            failureThreshold: 3
+              cpu: 500m
+              memory: 1Gi
           readinessProbe:
             exec:
               command: ["mongosh", "--eval", "db.adminCommand('ping')"]
-            initialDelaySeconds: 20
+            initialDelaySeconds: 40
             periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 60
+            periodSeconds: 20
             timeoutSeconds: 10
             failureThreshold: 3
   volumeClaimTemplates:
@@ -152,12 +149,14 @@ spec:
         name: mongo-data
       spec:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: local-path
+        storageClassName: nfs-storage
         resources:
           requests:
             storage: 500Mi
+
 ---
-# ══ ORDER-DB (dev) ════════════════════════════════════════════════════════════
+# ══ ORDER-DB (dev) ═════════════════════════════════════════════
+
 apiVersion: v1
 kind: Service
 metadata:
@@ -178,8 +177,6 @@ kind: StatefulSet
 metadata:
   name: order-db
   namespace: dev
-  labels:
-    app: order-db
 spec:
   serviceName: order-db
   replicas: 1
@@ -198,7 +195,6 @@ spec:
       containers:
         - name: mongodb
           image: mongo:7
-          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 27017
           volumeMounts:
@@ -206,23 +202,23 @@ spec:
               mountPath: /data/db
           resources:
             requests:
-              cpu: 50m
-              memory: 128Mi
+              cpu: 100m
+              memory: 512Mi
             limits:
-              cpu: 250m
-              memory: 256Mi
-          livenessProbe:
-            exec:
-              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
-            initialDelaySeconds: 40
-            periodSeconds: 20
-            timeoutSeconds: 10
-            failureThreshold: 3
+              cpu: 500m
+              memory: 1Gi
           readinessProbe:
             exec:
               command: ["mongosh", "--eval", "db.adminCommand('ping')"]
-            initialDelaySeconds: 20
+            initialDelaySeconds: 40
             periodSeconds: 10
+            timeoutSeconds: 10
+            failureThreshold: 3
+          livenessProbe:
+            exec:
+              command: ["mongosh", "--eval", "db.adminCommand('ping')"]
+            initialDelaySeconds: 60
+            periodSeconds: 20
             timeoutSeconds: 10
             failureThreshold: 3
   volumeClaimTemplates:
@@ -230,7 +226,7 @@ spec:
         name: mongo-data
       spec:
         accessModes: ["ReadWriteOnce"]
-        storageClassName: local-path
+        storageClassName: nfs-storage
         resources:
           requests:
             storage: 500Mi
