@@ -1,4 +1,4 @@
-# Notification Service — prod values (main branch)
+# Notification Service â prod values (main branch)
 namespace: prod
 
 image:
@@ -9,7 +9,7 @@ image:
 replicaCount: 1
 port: 8004
 
-# No HPA — stateless best-effort email service
+# No HPA â stateless best-effort email service
 
 resources:
   requests:
@@ -20,4 +20,4 @@ resources:
     memory: 256Mi
 
 rollout:
-  autoPromotion: false   # prod � manual promotion required
+  autoPromotion: false   # prod  manual promotion required

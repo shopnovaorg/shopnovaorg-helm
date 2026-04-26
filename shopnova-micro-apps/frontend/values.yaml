@@ -1,4 +1,4 @@
-# Frontend Service — prod values (main branch)
+# Frontend Service â prod values (main branch)
 namespace: prod
 
 image:
@@ -23,4 +23,4 @@ resources:
     memory: 128Mi
 
 rollout:
-  autoPromotion: false   # prod � manual promotion required
+  autoPromotion: false   # prod  manual promotion required

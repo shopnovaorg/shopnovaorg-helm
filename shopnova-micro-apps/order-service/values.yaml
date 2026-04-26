@@ -1,4 +1,4 @@
-# Order Service — prod values (main branch)
+# Order Service â prod values (main branch)
 namespace: prod
 
 image:
@@ -24,4 +24,4 @@ resources:
     memory: 512Mi
 
 rollout:
-  autoPromotion: false   # prod � manual promotion required
+  autoPromotion: false   # prod  manual promotion required
