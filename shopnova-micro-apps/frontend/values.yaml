@@ -23,4 +23,4 @@ resources:
     memory: 128Mi
 
 rollout:
-  autoPromotion: true   # dev — auto promote after readiness checks
+  autoPromotion: true   # dev ï¿½ auto promote after readiness checks
