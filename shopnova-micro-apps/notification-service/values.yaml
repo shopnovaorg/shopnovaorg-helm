@@ -1,16 +1,10 @@
-# Notification Service â prod values (main branch)
 namespace: prod
-
 image:
   repository: abhinavbabu33/shopnova-notification-service
   tag: notification-service-v0.2.0
   pullPolicy: Always
-
 replicaCount: 1
 port: 8004
-
-# No HPA â stateless best-effort email service
-
 resources:
   requests:
     cpu: 64m
@@ -18,6 +12,5 @@ resources:
   limits:
     cpu: 250m
     memory: 256Mi
-
 rollout:
-  autoPromotion: false   # prod  manual promotion required
+  autoPromotion: false

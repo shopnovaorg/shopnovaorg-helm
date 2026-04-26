@@ -1,20 +1,15 @@
-# Order Service â prod values (main branch)
 namespace: prod
-
 image:
   repository: abhinavbabu33/shopnova-order-service
   tag: order-service-v0.0.1
   pullPolicy: Always
-
 replicaCount: 1
 port: 8003
-
 hpa:
   minReplicas: 1
   maxReplicas: 3
   cpuUtilization: 70
   memoryUtilization: 80
-
 resources:
   requests:
     cpu: 128m
@@ -22,6 +17,5 @@ resources:
   limits:
     cpu: 500m
     memory: 512Mi
-
 rollout:
-  autoPromotion: false   # prod  manual promotion required
+  autoPromotion: false

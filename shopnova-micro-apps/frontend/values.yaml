@@ -1,19 +1,14 @@
-# Frontend Service â prod values (main branch)
 namespace: prod
-
 image:
   repository: abhinavbabu33/shopnova-frontend
   tag: frontend-service-v0.0.1
   pullPolicy: Always
-
 replicaCount: 1
 port: 3000
-
 hpa:
   minReplicas: 1
   maxReplicas: 3
   cpuUtilization: 70
-
 resources:
   requests:
     cpu: 64m
@@ -21,6 +16,5 @@ resources:
   limits:
     cpu: 250m
     memory: 128Mi
-
 rollout:
-  autoPromotion: false   # prod  manual promotion required
+  autoPromotion: false
