@@ -1,0 +1,51 @@
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: shopnova-dev
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/managed-by: argocd
+spec:
+  # ── Generator: one Application per service ─────────────────────────────
+  generators:
+    - list:
+        elements:
+          - service: auth-service
+          - service: product-service
+          - service: order-service
+          - service: notification-service
+          - service: frontend
+
+  # ── Template: generates an ArgoCD Application for each element ─────────
+  template:
+    metadata:
+      name: "{{service}}-dev"
+      namespace: argocd
+      labels:
+        environment: dev
+        app: "{{service}}"
+    spec:
+      project: default
+
+      source:
+        repoURL: https://github.com/shopnovaorg/shopnovaorg-helm
+        targetRevision: dev                     # always watches dev branch
+        path: "shopnova-micro-apps/{{service}}" # e.g. shopnova-micro-apps/auth-service
+        helm:
+          valueFiles:
+            - values.yaml      # dev branch values.yaml — namespace: dev, lighter resources
+            - values.dev.yaml  # CI writes updated image tag here on every dev push
+                               # Helm merges both; values.dev.yaml tag takes precedence
+
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: dev
+
+      syncPolicy:
+        automated:
+          prune: true        # remove resources deleted from helm chart
+          selfHeal: true     # revert manual kubectl changes
+        syncOptions:
+          - CreateNamespace=false   # dev namespace already exists from infra apply
+          - RespectIgnoreDifferences=true
+          - ApplyOutOfSyncOnly=true
