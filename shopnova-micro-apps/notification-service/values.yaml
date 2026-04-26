@@ -3,7 +3,7 @@ namespace: prod
 
 image:
   repository: abhinavbabu33/shopnova-notification-service
-  tag: latest          # ← helm-updater writes this field
+  tag: notification-service-v0.1.0
   pullPolicy: Always
 
 replicaCount: 1
