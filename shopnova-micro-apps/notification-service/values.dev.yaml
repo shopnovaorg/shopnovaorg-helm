@@ -3,3 +3,6 @@ namespace: dev
 
 image:
   tag: dev-cc3815f
+
+rollout:
+  autoPromotion: true   # dev — auto promote after readiness checks

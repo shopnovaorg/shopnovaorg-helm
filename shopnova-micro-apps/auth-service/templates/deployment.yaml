@@ -1,6 +1,40 @@
-{{- /* auth-service templates */}}
-apiVersion: apps/v1
-kind: Deployment
+{{- /* auth-service templates — Argo Rollouts blue-green */}}
+
+{{- /* ── Active Service (live traffic) ─────────────────────────────────── */}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service-active
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: auth-service
+spec:
+  selector:
+    app: auth-service
+  ports:
+    - port: {{ .Values.port }}
+      targetPort: {{ .Values.port }}
+  type: ClusterIP
+---
+{{- /* ── Preview Service (pre-promotion / test traffic) ───────────────── */}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: auth-service-preview
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: auth-service
+spec:
+  selector:
+    app: auth-service
+  ports:
+    - port: {{ .Values.port }}
+      targetPort: {{ .Values.port }}
+  type: ClusterIP
+---
+{{- /* ── Rollout (replaces Deployment) ──────────────────────────────────── */}}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: auth-service
   namespace: {{ .Values.namespace }}
@@ -70,22 +104,13 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
+  strategy:
+    blueGreen:
+      activeService: auth-service-active       # receives live traffic
+      previewService: auth-service-preview     # receives test traffic before promotion
+      autoPromotionEnabled: {{ .Values.rollout.autoPromotion }}
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: auth-service
-  namespace: {{ .Values.namespace }}
-  labels:
-    app: auth-service
-spec:
-  selector:
-    app: auth-service
-  ports:
-    - port: {{ .Values.port }}
-      targetPort: {{ .Values.port }}
-  type: ClusterIP
----
+{{- /* ── HPA targeting the Rollout ──────────────────────────────────────── */}}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -93,8 +118,8 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
+    apiVersion: argoproj.io/v1alpha1          # updated: targets Rollout not Deployment
+    kind: Rollout
     name: auth-service
   minReplicas: {{ .Values.hpa.minReplicas }}
   maxReplicas: {{ .Values.hpa.maxReplicas }}

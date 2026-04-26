@@ -1,6 +1,40 @@
-{{- /* notification-service templates — no HPA */}}
-apiVersion: apps/v1
-kind: Deployment
+{{- /* notification-service templates — Argo Rollouts blue-green (no HPA) */}}
+
+{{- /* ── Active Service (live traffic) ─────────────────────────────────── */}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service-active
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: notification-service
+spec:
+  selector:
+    app: notification-service
+  ports:
+    - port: {{ .Values.port }}
+      targetPort: {{ .Values.port }}
+  type: ClusterIP
+---
+{{- /* ── Preview Service (pre-promotion / test traffic) ───────────────── */}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-service-preview
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: notification-service
+spec:
+  selector:
+    app: notification-service
+  ports:
+    - port: {{ .Values.port }}
+      targetPort: {{ .Values.port }}
+  type: ClusterIP
+---
+{{- /* ── Rollout (replaces Deployment, no HPA for this service) ───────── */}}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: notification-service
   namespace: {{ .Values.namespace }}
@@ -65,18 +99,8 @@ spec:
             periodSeconds: 10
             timeoutSeconds: 5
             failureThreshold: 3
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: notification-service
-  namespace: {{ .Values.namespace }}
-  labels:
-    app: notification-service
-spec:
-  selector:
-    app: notification-service
-  ports:
-    - port: {{ .Values.port }}
-      targetPort: {{ .Values.port }}
-  type: ClusterIP
+  strategy:
+    blueGreen:
+      activeService: notification-service-active
+      previewService: notification-service-preview
+      autoPromotionEnabled: {{ .Values.rollout.autoPromotion }}

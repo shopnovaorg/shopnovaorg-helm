@@ -6,3 +6,6 @@ image:
 
 hpa:
   maxReplicas: 2
+
+rollout:
+  autoPromotion: true   # dev — auto promote after readiness checks

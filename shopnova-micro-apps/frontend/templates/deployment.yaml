@@ -1,6 +1,40 @@
-{{- /* frontend templates — nginx-config volume, CPU-only HPA */}}
-apiVersion: apps/v1
-kind: Deployment
+{{- /* frontend templates — Argo Rollouts blue-green, nginx-config volume, CPU-only HPA */}}
+
+{{- /* ── Active Service (live traffic) ─────────────────────────────────── */}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-active
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: frontend
+spec:
+  selector:
+    app: frontend
+  ports:
+    - port: {{ .Values.port }}
+      targetPort: {{ .Values.port }}
+  type: ClusterIP
+---
+{{- /* ── Preview Service (pre-promotion / test traffic) ───────────────── */}}
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-preview
+  namespace: {{ .Values.namespace }}
+  labels:
+    app: frontend
+spec:
+  selector:
+    app: frontend
+  ports:
+    - port: {{ .Values.port }}
+      targetPort: {{ .Values.port }}
+  type: ClusterIP
+---
+{{- /* ── Rollout (replaces Deployment) ──────────────────────────────────── */}}
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
 metadata:
   name: frontend
   namespace: {{ .Values.namespace }}
@@ -58,22 +92,13 @@ spec:
         - name: nginx-config-volume
           configMap:
             name: nginx-config
+  strategy:
+    blueGreen:
+      activeService: frontend-active
+      previewService: frontend-preview
+      autoPromotionEnabled: {{ .Values.rollout.autoPromotion }}
 ---
-apiVersion: v1
-kind: Service
-metadata:
-  name: frontend-service
-  namespace: {{ .Values.namespace }}
-  labels:
-    app: frontend
-spec:
-  selector:
-    app: frontend
-  ports:
-    - port: {{ .Values.port }}
-      targetPort: {{ .Values.port }}
-  type: ClusterIP
----
+{{- /* ── HPA targeting the Rollout (CPU-only for frontend) ─────────────── */}}
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -81,8 +106,8 @@ metadata:
   namespace: {{ .Values.namespace }}
 spec:
   scaleTargetRef:
-    apiVersion: apps/v1
-    kind: Deployment
+    apiVersion: argoproj.io/v1alpha1
+    kind: Rollout
     name: frontend
   minReplicas: {{ .Values.hpa.minReplicas }}
   maxReplicas: {{ .Values.hpa.maxReplicas }}
