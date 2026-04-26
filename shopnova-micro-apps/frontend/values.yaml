@@ -1,0 +1,23 @@
+# Frontend Service — prod values (main branch)
+namespace: prod
+
+image:
+  repository: abhinavbabu33/shopnova-frontend
+  tag: latest          # ← helm-updater writes this field
+  pullPolicy: Always
+
+replicaCount: 1
+port: 3000
+
+hpa:
+  minReplicas: 1
+  maxReplicas: 3
+  cpuUtilization: 70
+
+resources:
+  requests:
+    cpu: 64m
+    memory: 64Mi
+  limits:
+    cpu: 250m
+    memory: 128Mi
