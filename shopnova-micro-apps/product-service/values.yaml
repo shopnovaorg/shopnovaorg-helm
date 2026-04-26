@@ -3,7 +3,7 @@ namespace: prod
 
 image:
   repository: abhinavbabu33/shopnova-product-service
-  tag: latest          # ← helm-updater writes this field
+  tag: product-service-v0.1.0
   pullPolicy: Always
 
 replicaCount: 1
