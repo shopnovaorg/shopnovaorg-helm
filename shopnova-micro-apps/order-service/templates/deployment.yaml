@@ -76,6 +76,11 @@ spec:
                 secretKeyRef:
                   name: shopnova-secrets
                   key: ORDER_MONGO_URI
+            - name: JWT_SECRET
+              valueFrom:
+                secretKeyRef:
+                  name: shopnova-secrets
+                  key: JWT_SECRET
           resources:
             requests:
               cpu: {{ .Values.resources.requests.cpu }}
