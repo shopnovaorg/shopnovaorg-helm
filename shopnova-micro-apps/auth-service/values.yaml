@@ -1,7 +1,7 @@
 namespace: prod
 image:
   repository: abhinavbabu33/shopnova-auth-service
-  tag: auth-service-v0.2.0
+  tag: auth-service-v0.3.0
   pullPolicy: Always
 replicaCount: 1
 port: 8001
