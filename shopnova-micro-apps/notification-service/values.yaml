@@ -1,7 +1,7 @@
 namespace: prod
 image:
   repository: abhinavbabu33/shopnova-notification-service
-  tag: notification-service-v0.2.0
+  tag: notification-service-v0.2.1
   pullPolicy: Always
 replicaCount: 1
 port: 8004
