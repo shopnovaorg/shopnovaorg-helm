@@ -2,7 +2,7 @@
 namespace: dev
 
 image:
-  tag: dev-7ef01ae
+  tag: dev-7eb826c
 
 hpa:
   maxReplicas: 2
