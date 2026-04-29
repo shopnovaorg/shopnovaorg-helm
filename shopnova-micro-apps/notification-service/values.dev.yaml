@@ -2,7 +2,7 @@
 namespace: dev
 
 image:
-  tag: dev-cc3815f
+  tag: dev-1c3f45a
 
 rollout:
   autoPromotion: true   # dev � auto promote after readiness checks
